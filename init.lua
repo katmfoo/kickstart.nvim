@@ -761,9 +761,51 @@ require('lazy').setup {
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      require('mini.statusline').setup()
+      require('mini.statusline').setup {
+        use_icons = false,
+      }
       MiniStatusline.section_location = function()
         return '%2l:%-2v'
+      end
+
+      MiniStatusline.section_fileinfo = function()
+        return nil
+      end
+
+      MiniStatusline.section_diagnostics = function()
+        return nil
+      end
+
+      local CTRL_S = vim.api.nvim_replace_termcodes('<C-S>', true, true, true)
+      local CTRL_V = vim.api.nvim_replace_termcodes('<C-V>', true, true, true)
+
+      local modes = setmetatable({
+        ['n'] = { long = 'NORMAL', short = 'N', hl = 'MiniStatuslineModeNormal' },
+        ['v'] = { long = 'VISUAL', short = 'V', hl = 'MiniStatuslineModeVisual' },
+        ['V'] = { long = 'VLINE', short = 'VL', hl = 'MiniStatuslineModeVisual' },
+        [CTRL_V] = { long = 'VBLOCK', short = 'VB', hl = 'MiniStatuslineModeVisual' },
+        ['s'] = { long = 'SELECT', short = 'S', hl = 'MiniStatuslineModeVisual' },
+        ['S'] = { long = 'SLINE', short = 'SL', hl = 'MiniStatuslineModeVisual' },
+        [CTRL_S] = { long = 'SBLOCK', short = 'SB', hl = 'MiniStatuslineModeVisual' },
+        ['i'] = { long = 'INSERT', short = 'I', hl = 'MiniStatuslineModeInsert' },
+        ['R'] = { long = 'REPLACE', short = 'R', hl = 'MiniStatuslineModeReplace' },
+        ['c'] = { long = 'COMMAND', short = 'C', hl = 'MiniStatuslineModeCommand' },
+        ['r'] = { long = 'PROMPT', short = 'P', hl = 'MiniStatuslineModeOther' },
+        ['!'] = { long = 'SHELL', short = 'SH', hl = 'MiniStatuslineModeOther' },
+        ['t'] = { long = 'TERMINAL', short = 'T', hl = 'MiniStatuslineModeOther' },
+      }, {
+        -- By default return 'Unknown' but this shouldn't be needed
+        __index = function()
+          return { long = 'Unknown', short = 'U', hl = '%#MiniStatuslineModeOther#' }
+        end,
+      })
+
+      MiniStatusline.section_mode = function(args)
+        local mode_info = modes[vim.fn.mode()]
+
+        local mode = MiniStatusline.is_truncated(args.trunc_width) and mode_info.short or mode_info.long
+
+        return mode, mode_info.hl
       end
 
       -- ... and there is more!

@@ -848,6 +848,22 @@ require('lazy').setup {
     end,
   },
 
+  {
+    'luukvbaal/nnn.nvim',
+    config = function()
+      require('nnn').setup {
+        picker = {
+          style = {
+            width = 0.5,
+            height = 0.5,
+            border = 'rounded',
+          },
+        },
+      }
+      vim.keymap.set('n', '<leader>n', ':NnnPicker %:p:h<CR>', { desc = 'Open [n]nn' })
+    end,
+  },
+
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- put them in the right spots if you want.

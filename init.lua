@@ -271,7 +271,7 @@ require('lazy').setup({
     config = function()
       require('gitsigns').setup {
         on_attach = function(bufnr)
-          local gs = package.loaded.gitsigns
+          local gitsigns = require 'gitsigns'
 
           local function map(mode, l, r, opts)
             opts = opts or {}
@@ -282,47 +282,58 @@ require('lazy').setup({
           -- Navigation
           map('n', ']c', function()
             if vim.wo.diff then
-              return ']c'
+              vim.cmd.normal { ']c', bang = true }
+            else
+              gitsigns.nav_hunk 'next'
             end
-            vim.schedule(function()
-              gs.next_hunk()
-            end)
-            return '<Ignore>'
           end, { expr = true, desc = 'go to next [c]hange' })
 
           map('n', '[c', function()
             if vim.wo.diff then
-              return '[c'
+              vim.cmd.normal { '[c', bang = true }
+            else
+              gitsigns.nav_hunk 'prev'
             end
-            vim.schedule(function()
-              gs.prev_hunk()
-            end)
-            return '<Ignore>'
           end, { expr = true, desc = 'go to prev [c]hange' })
 
           -- Actions
-          map('n', '<leader>hs', gs.stage_hunk, { desc = '[h]unk [s]tage' })
-          map('n', '<leader>hr', gs.reset_hunk, { desc = '[h]unk [r]eset' })
+          map('n', '<leader>hs', gitsigns.stage_hunk, { desc = '[h]unk [s]tage' })
+          map('n', '<leader>hr', gitsigns.reset_hunk, { desc = '[h]unk [r]eset' })
+
           map('v', '<leader>hs', function()
-            gs.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+            gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
           end, { desc = '[h]unk [s]tage' })
+
           map('v', '<leader>hr', function()
-            gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+            gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
           end, { desc = '[h]unk [r]eset' })
-          map('n', '<leader>hS', gs.stage_buffer, { desc = '[h]unk [S]tage bufer' })
-          --map('n', '<leader>hu', gs.undo_stage_hunk)
-          --map('n', '<leader>hR', gs.reset_buffer)
-          map('n', '<leader>hp', gs.preview_hunk, { desc = '[h]unk [p]review' })
+
+          map('n', '<leader>hS', gitsigns.stage_buffer, { desc = '[h]unk [S]tage buffer' })
+          map('n', '<leader>hR', gitsigns.reset_buffer, { desc = '[h]unk [R]eset buffer' })
+          map('n', '<leader>hp', gitsigns.preview_hunk, { desc = '[h]unk [p]review' })
+          map('n', '<leader>hi', gitsigns.preview_hunk_inline, { desc = '[h]unk preview [i]nline' })
+
           map('n', '<leader>hb', function()
-            gs.blame_line { full = true }
+            gitsigns.blame_line { full = true }
           end, { desc = '[h]unk [b]lame' })
-          --map('n', '<leader>tb', gs.toggle_current_line_blame)
-          --map('n', '<leader>hd', gs.diffthis)
-          --map('n', '<leader>hD', function() gs.diffthis('~') end)
-          --map('n', '<leader>td', gs.toggle_deleted)
+
+          map('n', '<leader>hd', gitsigns.diffthis, { desc = '[h]unk [d]iff' })
+
+          map('n', '<leader>hD', function()
+            gitsigns.diffthis '~'
+          end, { desc = '[h]unk [D]iff ~' })
+
+          map('n', '<leader>hQ', function()
+            gitsigns.setqflist 'all'
+          end, { desc = '[h]unk [Q]uickfix all' })
+          map('n', '<leader>hq', gitsigns.setqflist, { desc = '[h]unk [q]uickfix' })
+
+          -- Toggles
+          map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[t]oggle current line [b]lame' })
+          map('n', '<leader>tw', gitsigns.toggle_word_diff, { desc = '[t]oggle [w]ord diff' })
 
           -- Text object
-          map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+          map({ 'o', 'x' }, 'ih', gitsigns.select_hunk)
         end,
       }
     end,
@@ -720,7 +731,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        tsserver = {},
+        ts_ls = {},
 
         intelephense = {
 
